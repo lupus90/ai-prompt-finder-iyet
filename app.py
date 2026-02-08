@@ -4,7 +4,7 @@ import tempfile
 import os
 import time
 
-# Konfigurasi API yang lebih aman
+# Konfigurasi API
 if "GEMINI_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 else:
@@ -25,21 +25,24 @@ if file_video:
             st.info("🔄 Memproses video...")
             v_file = genai.upload_file(path=path_tmp)
             
-            # Menunggu proses upload/indexing
             while v_file.state.name == "PROCESSING":
                 time.sleep(2)
                 v_file = genai.get_file(v_file.name)
 
-            # MENGATASI ERROR 404: Menggunakan nama model standar
-            # Jika tetap 404, library Anda butuh update di requirements.txt
-            model = genai.GenerativeModel('gemini-1.5-flash')
-            
-            res = model.generate_content([v_file, "Buatkan prompt detail untuk video ini dalam Bahasa Indonesia."])
+            # LOGIKA AUTO-FIX MODEL
+            try:
+                # Coba cara standar pertama
+                model = genai.GenerativeModel('gemini-1.5-flash')
+                res = model.generate_content([v_file, "Buat prompt video ini."])
+            except:
+                # Jika gagal, cari model flash yang tersedia di sistem
+                available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+                flash_model = next((m for m in available_models if 'flash' in m), available_models[0])
+                model = genai.GenerativeModel(flash_model)
+                res = model.generate_content([v_file, "Buat prompt video ini."])
             
             st.success("✅ Berhasil!")
             st.write(res.text)
-            
-            # Bersihkan file di server Google
             genai.delete_file(v_file.name)
             
         except Exception as e:
