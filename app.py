@@ -41,6 +41,13 @@ if uploaded_file:
         except Exception as e:
             st.error(f"Error: {e}")
         finally:
+            os.remove(tmp_path)            
+            st.success("Prompt Berhasil Ditemukan!")
+            st.write(response.text)
+            
+        except Exception as e:
+            st.error(f"Error: {e}")
+        finally:
             os.remove(tmp_path)    
     return response.text
 
