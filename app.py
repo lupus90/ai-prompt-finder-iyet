@@ -4,7 +4,7 @@ import tempfile
 import os
 
 # --- KONFIGURASI API ---
-# Mengambil key dari Secrets, bukan diketik langsung
+# Mengambil key dari Secrets
 API_KEY = st.secrets["GEMINI_API_KEY"]
 genai.configure(api_key=API_KEY)
 # --- FUNGSI PROSES VIDEO ---
