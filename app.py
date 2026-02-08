@@ -11,7 +11,7 @@ if "GEMINI_API_KEY" in st.secrets:
 else:
     st.error("Masukkan GEMINI_API_KEY di menu Secrets Streamlit!")
 
-st.title("🎬 AI Prompt Finder @iyet")
+st.title("🎬 AI Prompt Finder @rizgotutorial")
 
 uploaded_file = st.file_uploader("Unggah Video", type=["mp4", "mov"])
 
