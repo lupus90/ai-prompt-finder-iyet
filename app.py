@@ -3,38 +3,45 @@ import google.generativeai as genai
 import tempfile
 import os
 import time
-# --- KONFIGURASI API ---
-# Masukkan API Key Anda di sini
-API_KEY = "MASUKKAN_GEMINI_API_KEY_ANDA"
-genai.configure(api_key=API_KEY)
 
-# --- FUNGSI PROSES VIDEO ---
-def process_video_to_prompt(video_path, bahasa):
-    models = genai.GenerativeModel('gemini-1.5-flash')
-    
-    # Unggah file ke Google File API
-    st.info("Sedang mengunggah ke AI Engine...")
-    video_file = genai.upload_file(path=video_path)
-    
-    # Tunggu proses pemrosesan video di sisi server Google
-    while video_file.state.name == "PROCESSING":
-        time.sleep(2)
-        video_file = genai.get_file(video_file.name)
+# Mengambil API Key secara aman dari Secrets Streamlit Cloud
+if "GEMINI_API_KEY" in st.secrets:
+    API_KEY = st.secrets["GEMINI_API_KEY"]
+    genai.configure(api_key=API_KEY)
+else:
+    st.error("Masukkan GEMINI_API_KEY di menu Secrets Streamlit!")
 
-    # Instruksi Prompt
-    prompt_instruction = f"""
-    Analisis video ini secara mendalam. 
-    Berikan deskripsi teknis (Reverse Prompt) agar orang lain bisa membuat ulang video serupa.
-    Sertakan: subjek, aksi, pencahayaan, gaya kamera, dan suasana.
-    Tuliskan hasilnya dalam {bahasa}.
-    Akhiri dengan satu paragraf 'Final Prompt' yang siap digunakan.
-    """
+st.title("🎬 AI Prompt Finder @iyet")
+
+uploaded_file = st.file_uploader("Unggah Video", type=["mp4", "mov"])
+
+if uploaded_file:
+    st.video(uploaded_file)
     
-    response = model.generate_content([video_file, prompt_instruction])
-    
-    # Hapus file dari server Google setelah selesai (opsional)
-    genai.delete_file(video_file.name)
-    
+    if st.button("✨ Hasilkan Prompt"):
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as tmp:
+            tmp.write(uploaded_file.read())
+            tmp_path = tmp.name
+
+        try:
+            st.info("Sedang mengunggah ke AI Engine...")
+            video_file = genai.upload_file(path=tmp_path)
+            
+            # Menunggu proses AI (ini yang menyebabkan error 'time' sebelumnya)
+            while video_file.state.name == "PROCESSING":
+                time.sleep(2)
+                video_file = genai.get_file(video_file.name)
+
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            response = model.generate_content([video_file, "Buatkan prompt detail untuk video ini."])
+            
+            st.success("Prompt Berhasil Ditemukan!")
+            st.write(response.text)
+            
+        except Exception as e:
+            st.error(f"Error: {e}")
+        finally:
+            os.remove(tmp_path)    
     return response.text
 
 # --- UI STREAMLIT (STYLING RIZGOTUTORIAL) ---
