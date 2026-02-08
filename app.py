@@ -60,11 +60,4 @@ if uploaded_file is not None:
         finally:
             # Hapus file sementara dari memori aplikasi
             if os.path.exists(tmp_path):
-                os.remove(tmp_path)            
-            st.success("Prompt Berhasil Ditemukan!")
-            st.write(response.text)
-            
-        except Exception as e:
-            st.error(f"Error: {e}")
-        finally:
-            os.remove(tmp_path)                
+                os.remove(tmp_path)
