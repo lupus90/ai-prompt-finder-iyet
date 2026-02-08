@@ -5,9 +5,11 @@ import os
 
 # --- KONFIGURASI API ---
 # Masukkan API Key Anda di sini
-API_KEY = "MASUKKAN_GEMINI_API_KEY_ANDA"
-genai.configure(api_key=API_KEY)
-
+if "GEMINI_API_KEY" in st.secrets:
+    API_KEY = st.secrets["GEMINI_API_KEY"]
+    genai.configure(api_key=API_KEY)
+else:
+    st.error("API Key belum dikonfigurasi di Secrets Streamlit!")
 # --- FUNGSI PROSES VIDEO ---
 def process_video_to_prompt(video_path, bahasa):
     model = genai.GenerativeModel('gemini-1.5-flash')
