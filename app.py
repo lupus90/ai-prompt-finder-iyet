@@ -4,10 +4,9 @@ import tempfile
 import os
 
 # --- KONFIGURASI API ---
-# Masukkan API Key Anda di sini
-API_KEY = "MASUKKAN_GEMINI_API_KEY_ANDA"
+# Mengambil key dari Secrets, bukan diketik langsung
+API_KEY = st.secrets["GEMINI_API_KEY"]
 genai.configure(api_key=API_KEY)
-
 # --- FUNGSI PROSES VIDEO ---
 def process_video_to_prompt(video_path, bahasa):
     model = genai.GenerativeModel('gemini-1.5-flash')
